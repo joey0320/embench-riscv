@@ -12,6 +12,8 @@
    SPDX-License-Identifier: GPL-3.0-or-later */
 
 #include "support.h"
+#include <sys/time.h>
+#include <stdio.h>
 
 
 int __attribute__ ((used))
@@ -26,13 +28,23 @@ main (int argc __attribute__ ((unused)),
   initialise_benchmark ();
   warm_caches (WARMUP_HEAT);
 
+  struct timeval begin, end;
+  gettimeofday(&begin, 0);
+
   start_trigger ();
   result = benchmark ();
   stop_trigger ();
 
+  gettimeofday(&end, 0);
+  long sec = end.tv_sec - begin.tv_sec;
+  long usec = end.tv_usec - begin.tv_usec;
+  double elapsed = sec + usec * 1e-6;
+
   /* bmarks that use arrays will check a global array rather than int result */
 
   correct = verify_benchmark (result);
+
+  printf("WallClockTime: %.9f sec\n", elapsed);
 
   return (!correct);
 
